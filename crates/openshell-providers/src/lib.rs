@@ -75,16 +75,17 @@ impl ProviderRegistry {
     #[must_use]
     pub fn new() -> Self {
         let mut registry = Self::default();
+        registry.register(providers::anthropic::AnthropicProvider);
+        registry.register(providers::bedrock::BedrockProvider);
         registry.register(providers::claude::ClaudeProvider);
         registry.register(providers::codex::CodexProvider);
         registry.register(providers::copilot::CopilotProvider);
-        registry.register(providers::opencode::OpencodeProvider);
         registry.register(providers::generic::GenericProvider);
-        registry.register(providers::openai::OpenaiProvider);
-        registry.register(providers::anthropic::AnthropicProvider);
-        registry.register(providers::nvidia::NvidiaProvider);
-        registry.register(providers::gitlab::GitlabProvider);
         registry.register(providers::github::GithubProvider);
+        registry.register(providers::gitlab::GitlabProvider);
+        registry.register(providers::nvidia::NvidiaProvider);
+        registry.register(providers::openai::OpenaiProvider);
+        registry.register(providers::opencode::OpencodeProvider);
         registry.register(providers::outlook::OutlookProvider);
         registry
     }
@@ -127,16 +128,17 @@ impl ProviderRegistry {
 pub fn normalize_provider_type(input: &str) -> Option<&'static str> {
     let normalized = input.trim().to_ascii_lowercase();
     match normalized.as_str() {
+        "anthropic" => Some("anthropic"),
+        "bedrock" | "aws-bedrock" | "aws_bedrock" => Some("bedrock"),
         "claude" => Some("claude"),
         "codex" => Some("codex"),
         "copilot" => Some("copilot"),
-        "opencode" => Some("opencode"),
         "generic" => Some("generic"),
-        "openai" => Some("openai"),
-        "anthropic" => Some("anthropic"),
-        "nvidia" => Some("nvidia"),
-        "gitlab" | "glab" => Some("gitlab"),
         "github" | "gh" => Some("github"),
+        "gitlab" | "glab" => Some("gitlab"),
+        "nvidia" => Some("nvidia"),
+        "openai" => Some("openai"),
+        "opencode" => Some("opencode"),
         "outlook" => Some("outlook"),
         _ => None,
     }
@@ -165,6 +167,9 @@ mod tests {
         assert_eq!(normalize_provider_type("generic"), Some("generic"));
         assert_eq!(normalize_provider_type("openai"), Some("openai"));
         assert_eq!(normalize_provider_type("anthropic"), Some("anthropic"));
+        assert_eq!(normalize_provider_type("bedrock"), Some("bedrock"));
+        assert_eq!(normalize_provider_type("aws-bedrock"), Some("bedrock"));
+        assert_eq!(normalize_provider_type("aws_bedrock"), Some("bedrock"));
         assert_eq!(normalize_provider_type("nvidia"), Some("nvidia"));
         assert_eq!(normalize_provider_type("copilot"), Some("copilot"));
         assert_eq!(normalize_provider_type("unknown"), None);

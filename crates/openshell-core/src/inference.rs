@@ -76,6 +76,16 @@ static ANTHROPIC_PROFILE: InferenceProviderProfile = InferenceProviderProfile {
     default_headers: &[("anthropic-version", "2023-06-01")],
 };
 
+static BEDROCK_PROFILE: InferenceProviderProfile = InferenceProviderProfile {
+    provider_type: "bedrock",
+    default_base_url: "https://bedrock-runtime.us-east-1.amazonaws.com",
+    protocols: ANTHROPIC_PROTOCOLS,
+    credential_key_names: &["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN"],
+    base_url_config_keys: &["AWS_BEDROCK_BASE_URL"],
+    auth: AuthHeader::Bearer,
+    default_headers: &[],
+};
+
 static NVIDIA_PROFILE: InferenceProviderProfile = InferenceProviderProfile {
     provider_type: "nvidia",
     default_base_url: "https://integrate.api.nvidia.com/v1",
@@ -94,6 +104,7 @@ pub fn profile_for(provider_type: &str) -> Option<&'static InferenceProviderProf
     match provider_type.trim().to_ascii_lowercase().as_str() {
         "openai" => Some(&OPENAI_PROFILE),
         "anthropic" => Some(&ANTHROPIC_PROFILE),
+        "bedrock" | "aws-bedrock" | "aws_bedrock" => Some(&BEDROCK_PROFILE),
         "nvidia" => Some(&NVIDIA_PROFILE),
         _ => None,
     }
@@ -175,6 +186,9 @@ mod tests {
     fn profile_for_known_types() {
         assert!(profile_for("openai").is_some());
         assert!(profile_for("anthropic").is_some());
+        assert!(profile_for("bedrock").is_some());
+        assert!(profile_for("aws-bedrock").is_some());
+        assert!(profile_for("aws_bedrock").is_some());
         assert!(profile_for("nvidia").is_some());
         assert!(profile_for("OpenAI").is_some()); // case insensitive
     }
@@ -184,6 +198,13 @@ mod tests {
         assert!(profile_for("github").is_none());
         assert!(profile_for("gitlab").is_none());
         assert!(profile_for("unknown").is_none());
+    }
+
+    #[test]
+    fn bedrock_profile_uses_anthropic_protocols() {
+        let profile = profile_for("bedrock").unwrap();
+        assert!(profile.protocols.contains(&"anthropic_messages"));
+        assert_eq!(profile.auth, AuthHeader::Bearer);
     }
 
     #[test]

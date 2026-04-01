@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod anthropic;
+pub mod bedrock;
 pub mod claude;
 pub mod codex;
 pub mod copilot;
